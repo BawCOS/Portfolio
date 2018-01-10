@@ -3,4 +3,4 @@ This is a repository of what I consider interesting notebooks and code.  Some ar
 
 An example of a teaching video I made is at https://goo.gl/imvVZC 
 
-
+Johns Hopkins Automatic R Instructor https://goo.gl/rBiEb6
