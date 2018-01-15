@@ -23,3 +23,5 @@ cs120_lab2_linear_regression_df.ipynb is a jupyter notebook from a course I comp
 An example of a teaching video I made is at https://goo.gl/imvVZC 
 
 Johns Hopkins Automatic R Instructor https://goo.gl/rBiEb6
+
+A paper I co-authored called Understanding Neural Networks as Statistical Tools can be viewed online at https://goo.gl/qm8Cv7 
