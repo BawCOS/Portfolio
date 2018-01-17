@@ -25,3 +25,5 @@ An example of a teaching video I made is at https://goo.gl/imvVZC
 Johns Hopkins Automatic R Instructor https://goo.gl/rBiEb6
 
 A paper I co-authored called Understanding Neural Networks as Statistical Tools can be viewed online at https://goo.gl/qm8Cv7 
+
+My curriculum vitae is posted in CV online.pdf
