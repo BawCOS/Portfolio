@@ -2,8 +2,7 @@
 
 This is a repository of what I consider interesting notebooks and code.  Some are jupyter notebooks and others are RMarkdown compiled as pdf files.  I have also included links to a simple video that was created by adopting and adapting code from the Automatic R Instructor repository from Johns Hopkins.  I also have a link to a video I created with Camtasia for use in my flipped classroom.  The following is a summary of the files in this repository:
 
-Naive Byaes ClassifierI wrote a project on developing a simple naive Bayes classifier. Students have to import data, clean it and get it into a useful form, perform basic exploratory analysis and resampling based inference, and finally build the classifier. 
-
+[Naive Bayes Classifier - Warner.ipynb](https://github.com/BawCOS/Portfolio/blob/master/Naive%20Bayes%20Classifier%20-%20Warner.ipynb) is a project I wrote on developing a simple naive Bayes classifier. To complete, you have to import data, clean it and get it into a useful form, perform basic exploratory analysis and resampling based inference, and finally build the classifier. 
 
 Art Generation with Neural Style Transfer - v2 with my images.ipynb - This file is from the Coursera course on convolutional neural networks https://www.coursera.org/learn/convolutional-neural-networks. I completed the code and added some additional code of my own.
 
