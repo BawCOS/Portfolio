@@ -4,7 +4,7 @@ This is a repository of what I consider interesting notebooks and code.  Some ar
 
 [Naive Bayes Classifier - Warner.ipynb](https://github.com/BawCOS/Portfolio/blob/master/Naive%20Bayes%20Classifier%20-%20Warner.ipynb) is a project I wrote on developing a simple naive Bayes classifier. To complete, you have to import data, clean it and get it into a useful form, perform basic exploratory analysis and resampling based inference, and finally build the classifier. 
 
-[Cadet Seating for Test Project.ipynb] (https://github.com/BawCOS/Portfolio/blob/master/Cadet%20Seating%20for%20Test%20Project.ipynb) is a notebook for a discrete math class. This notebook has mathematical and computational solutions to a difficult counting problem.
+[Cadet Seating for Test Project.ipynb](https://github.com/BawCOS/Portfolio/blob/master/Cadet%20Seating%20for%20Test%20Project.ipynb) is a notebook for a discrete math class. This notebook has mathematical and computational solutions to a difficult counting problem.
 
 [Art Generation with Neural Style Transfer - v2 with my images.ipynb](https://github.com/BawCOS/Portfolio/blob/master/Art%20Generation%20with%20Neural%20Style%20Transfer%20-%20v2%20with%20my%20images.ipynb) - This file is from the Coursera course on convolutional neural networks https://www.coursera.org/learn/convolutional-neural-networks. I completed the code and added some additional code of my own.
 
