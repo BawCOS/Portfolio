@@ -10,7 +10,7 @@ This is a repository of what I consider interesting notebooks and code.  Some ar
 
 [Final Project Notebook 3 Solution.ipynb](https://github.com/BawCOS/Portfolio/blob/master/Final%20Project%20Notebook%203%20Solution.ipynb) is a jupyter notebook I created for my course on statistical and machine learning.  I adopted a notebook from the Edx course from Databricks for my class.  This notebook is my solution.
 
-[Lesson_27.pdf](https://github.com/BawCOS/Portfolio/blob/master/Lesson_27.pdf) and [Lesson_28.pdf](https://github.com/BawCOS/Portfolio/blob/master/Lesson_28.pdf) are Rmardown files compiled via latex into pdfs that I created for a course I taught.  I compiled all my notes into a bookdown at https://github.com/BawCOS/undergraduate-statistics-notes 
+[Lesson_27.pdf](https://github.com/BawCOS/Portfolio/blob/master/Lesson_27.pdf) and [Lesson_28.pdf](https://github.com/BawCOS/Portfolio/blob/master/Lesson_28.pdf) are Rmardown files compiled via latex into pdfs that I created for a course I taught.  I compiled all my notes into a bookdown at https://bawcos.github.io/undergraduate-statistics-notes/
 
 [LIME on RF Example.ipnyb](https://github.com/BawCOS/Portfolio/blob/master/Lime%20on%20RF%20Example.ipynb) is a jupyter notebook adopted from https://github.com/marcotcr/lime that I got running locally on my machine.  It demonstrates how to make a complex shallow model interpretable. 
 
