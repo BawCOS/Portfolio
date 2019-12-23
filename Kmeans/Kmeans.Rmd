@@ -1,0 +1,613 @@
+---
+title: "K-means Clustering"
+author: "Bradley Warner"
+date: "May 14, 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  html_notebook:
+    number_sections: yes
+    toc: yes
+  pdf_document:
+    toc: yes
+editor_options:
+  chunk_output_type: inline
+---
+
+# Objectives
+
+1. Understand clustering in the greater scope of unsupervised learning.  
+2. Understand and explain distance metrics and scaling.  
+3. Explain K-means clustering algorithm and its parameters.  
+4. Use K-means clustering in R.  
+
+
+# Unsupervised Learning 
+
+### Question
+
+What is unsupervised learning in comparison to supervised learning?
+
+It is more challenging because it is hard to tune and validate models.
+
+Examples:  
+1. Marketing segmentation  
+2. Gene grouping  
+3. Dimension reduction in predictive modeling  
+4. Language translation models in deep learning  
+5. EDA  
+6. [Cyber profiling](https://dzone.com/articles/10-interesting-use-cases-for-the-k-means-algorithm)  
+
+### Question
+
+For which of the following would clustering likely be appropriate:
+
+1. Predicting if a user will click on an AD  
+2. Identifying stocks that follow similar trading patterns  
+3. Modeling 30-day mortality post-surgery  
+4. Grouping response to customer survey  
+5. Identifying similar players for a fantasy league draft   
+
+# K-means Ideas
+
+K-means is a partitioning method that finds subgroups that are similar. We must consider:
+
+1. How many subgroups.  
+2. What does similar mean.  
+
+## Distance 
+
+In this example, we are creating two points, consider them to be players on a field.
+
+```{r}
+two_players<-data.frame(x=c(5,15),y=c(4,10))
+```
+
+Load the libraries.
+```{r warning=FALSE}
+library(tidyverse)
+``` 
+
+Plot the two players and then calculate their Euclidean distance.
+
+```{r}
+# Plot the positions of the players
+ggplot(two_players, aes(x = x, y = y)) + 
+  geom_point() +
+  # Assuming a 40x60 field
+  lims(x = c(-30,30), y = c(-20, 20))
+```
+
+The distance between them is:
+
+```{r}
+# Split the players data frame into two observations
+player1 <- two_players[1, ]
+player2 <- two_players[2, ]
+
+# Calculate and print their distance using the Euclidean Distance formula
+player_distance <- sqrt( (player1$x - player2$x)^2 + (player1$y - player2$y)^2 )
+player_distance
+```
+
+There is a built in function for this called dist.
+
+```{r}
+# Calculate the Distance Between two_players
+dist_two_players <- dist(two_players)
+dist_two_players
+```
+
+Let's add another player and find the distance.
+
+```{r}
+three_players <- rbind(c(0,20),two_players)
+three_players
+```
+The distance between them pairwise is:
+
+```{r}
+# Calculate the Distance Between two_players
+dist_three_players <- dist(three_players)
+dist_three_players
+```
+
+Let's use the `factoextra` package to look at distance.
+
+```{r warning=FALSE}
+library(factoextra)
+```
+
+```{r}
+fviz_dist(get_dist(three_players))
+```
+
+Let's add another player.
+
+```{r}
+four_players<-rbind(c(-5,5),three_players)
+# Plot the positions of the players
+ggplot(four_players, aes(x = x, y = y)) + 
+  geom_point() +
+  # Assuming a 40x60 field
+  lims(x = c(-30,30), y = c(-20, 20))
+```
+
+
+```{r}
+get_dist(four_players)
+```
+
+```{r}
+fviz_dist(get_dist(four_players))
+```
+
+## Scaling  
+
+What happens if our variables have different scales. Let's use the trees data. To get more information on the data type:
+
+```
+?trees
+```
+
+
+```{r}
+three_trees <- trees[c(1,2,4),1:2]
+three_trees
+```
+Notice that height is a much larger scale than girth and will dominate the distance metric.
+
+```{r}
+get_dist(three_trees)
+```
+
+Points 1 and 4 are the closest in terms of height but that is because it is a much larger scale than girth. 
+
+Scaling will put all variables on same scale.
+
+```{r}
+get_dist(three_trees,stand=TRUE)
+```
+
+Notice that points 1 and 2 are now the closest.
+
+### Question 
+
+Should we scale if we are working with height, weight, and body fat?
+
+## Distance for Categorical Variables
+
+What about categorical variables?
+
+Let's makeup some data.
+
+```{r}
+job_survey <- data.frame(job_satisfaction=c("Low","Low","Hi","Low","Mid"), 
+                         is_happy = c("No","No","Yes","No","No"))
+job_survey
+```
+
+Load a new library.
+
+```{r}
+library(dummies)
+```
+
+```{r}
+# Dummify the Survey Data
+dummy_survey <- dummy.data.frame(job_survey)
+
+# Calculate the Distance
+dist_survey <- get_dist(dummy_survey,method="binary")
+
+# Print the Original Data
+job_survey
+```
+
+```{r}
+dummy_survey
+```
+
+One hot encoding in deep learning.
+
+```{r}
+# Print the Distance Matrix
+dist_survey
+```
+
+The binary metric is Jaccard distance which is 1 minus the intersection over the union.
+
+If we have mixed, then we could use the Gower metric with the daisy function in the cluster package.
+
+We are ready to learn about the algorithm for K-means.
+
+# K-means Algorithm  
+
+We want to develop an insight into the algorithm. We will use the simple players data to motivate the algorithm.  
+
+## Setup  
+
+Get data for the two teams.
+
+```{r}
+lineup <- readRDS("lineup.rds")
+lineup
+```
+
+Plot the data.
+
+```{r}
+ggplot(lineup, aes(x = x, y = y)) +
+  geom_point()
+```
+
+## Metric  
+
+In this problem we know that there are two teams so we have two clusters. In most problems we will not know the clusters. To find the clusters we need a metric. We minimize the within-cluster variation.
+
+$$ {1 \over |C_k|} \sum_{i, i' \in C_k} \sum_{j=1}^{p} (x_{ij} - x_{i'j})^{2} $$
+by expanding around the cluster mean, this is equivalent to
+
+$$ 2 \sum_{ i \in C_k} \sum_{j=1}^{p} (x_{ij} - \bar{x}_{kj})^{2} $$
+
+## Pseudo code
+
+```  
+Pick number of cluster
+
+1. Randomly assign each point to a cluster or randomly pick centroid  
+2. Iterate until cluster assignments stop changing  
+  a) Find centroids, mean of the features  
+  b) Assign each observation to cluster with closet centroid    
+``` 
+## One Iteration 
+
+Let take a couple of steps manually through the algorithm
+
+```{r}
+set.seed(2019)
+cluster <- sample(c(1,2),12,replace=TRUE)
+```
+
+Plot the positions of the players and color them using their cluster 
+
+```{r}
+ggplot(lineup, aes(x = x, y = y, color = factor(cluster))) +
+  geom_point()
+```
+
+Find the centroids.
+
+```{r}
+map_dbl(lineup[cluster==1,],mean)
+```
+
+```{r}
+centroids <- cbind(lineup,cluster) %>% group_by(cluster) %>% 
+  summarise(x=mean(x),y=mean(y))
+centroids
+```
+
+```{r}
+dist_new <- as.matrix(get_dist(rbind(centroids[,-1],lineup)))[-(1:2),1:2]
+dist_new
+```
+
+```{r}
+cluster <- (dist_new[,1]>dist_new[,2]) +1
+cluster
+```
+
+```{r}
+ggplot(lineup, aes(x = x, y = y, color = factor(cluster))) +
+  geom_point()
+```
+
+# K-means in R
+
+We will now build our first K-means model using the function in R. We will use default parameters at first.  
+
+## Build First K-means model in R
+
+```{r}
+model_km2 <- kmeans(lineup, centers = 2)
+```
+
+```{r}
+names(model_km2)
+```
+
+Extract the cluster assignment vector from the K-means model
+
+```{r}
+clust_km2 <- model_km2$cluster
+clust_km2
+```
+
+Create a new data frame appending the cluster assignment.
+
+```{r}
+lineup_km2 <- mutate(lineup, cluster = clust_km2)
+lineup_km2
+```
+
+Plot the positions of the players and color them using their cluster
+```{r}
+ggplot(lineup_km2, aes(x = x, y = y, color = factor(cluster))) +
+  geom_point()
+```
+
+## Visualize the Results  
+
+```{r}
+fviz_cluster(model_km2, data = lineup, palette = "jco",
+             ggtheme = theme_minimal())
+```
+
+## Change Number of Clusters  
+
+Since we knew beforehand that there were two teams we made this problems easier. Often we do not know how many clusters. Before we attack this problem, let's see what happens if we use three clusters.  
+
+Build the K-means model.  
+
+```{r}
+# Build a kmeans model
+model_km3 <- kmeans(lineup,centers=3)
+
+# Extract the cluster assignment vector from the kmeans model
+clust_km3 <- model_km3$cluster
+
+# Create a new data frame appending the cluster assignment
+lineup_km3 <- mutate(lineup,cluster = clust_km3)
+```
+
+Now let's plot the results. 
+
+```{r}
+
+# Plot the positions of the players and color them using their cluster
+ggplot(lineup_km3, aes(x = x, y = y, color = factor(cluster))) +
+  geom_point()
+```
+
+We will look at the cluster plots.
+
+```{r}
+fviz_cluster(model_km3, data = lineup, palette = "jco",
+             ggtheme = theme_minimal())
+```
+
+The algorithm let's us use any number of clusters from 2 up to the number of data points.
+
+## Starting Seed  
+
+Let's run the same model again but since the seed is different, we may get a different model. 
+
+
+```{r}
+set.seed(11)
+# Build a kmeans model
+model_km3a <- kmeans(lineup,centers=3)
+
+# Extract the cluster assignment vector from the kmeans model
+clust_km3a <- model_km3a$cluster
+
+# Create a new data frame appending the cluster assignment
+lineup_km3a <- mutate(lineup,cluster = clust_km3a)
+```
+
+
+```{r}
+model_km3
+```
+
+Now let's plot the results. 
+
+```{r}
+# Plot the positions of the players and color them using their cluster
+ggplot(lineup_km3a, aes(x = x, y = y, color = factor(cluster))) +
+  geom_point()
+```
+
+
+```{r}
+fviz_cluster(model_km3a, data = lineup, palette = "jco", ellipse = FALSE,
+             ggtheme = theme_gray())
+```
+
+## Issues to Consider  
+
+The model is sensitive to the starting position of clusters and also to the number of clusters.
+
+Thus we need:  
+1 Run K-means for different random seeds with fixed number of clusters   
+2 Find method to determine the number of clusters  
+
+## Running Multiple Models 
+
+To address the first issue, R lets us use run multiple models with the `nstart` option and will return the single best model. What is best?
+
+```{r}
+# Build a kmeans model
+model_km3_best <- kmeans(lineup,centers=3,nstart=25)
+
+# Extract the cluster assignment vector from the kmeans model
+clust_km3_best <- model_km3_best$cluster
+
+# Create a new data frame appending the cluster assignment
+lineup_km3_best <- mutate(lineup,cluster = clust_km3_best)
+```
+
+```{r}
+# Plot the positions of the players and color them using their cluster
+ggplot(lineup_km3_best, aes(x = x, y = y, color = factor(cluster))) +
+  geom_point()
+```
+
+Let's compare the models we 
+
+```{r}
+c(model_km3a$tot.withinss,model_km3_best$tot.withinss)
+```
+
+## Elbow Method  
+
+To determine the number of clusters we can plot the total within sum of squares versus clusters and look for a diminishing return. This is called a scree plot. We will use a mapping function to perform this.
+
+First create the mapping. 
+
+```{r}
+# Use map_dbl to run many models with varying value of k (centers)
+tot_withinss <- map_dbl(1:10,  function(k){
+  model <- kmeans(x = lineup, centers = k,nstart=25)
+  model$tot.withinss
+})
+```
+
+Now merge into a data frame. 
+
+```{r}
+# Generate a data frame containing both k and tot_withinss
+elbow_df <- data.frame(
+  k = 1:10 ,
+  tot_withinss = tot_withinss
+)
+head(elbow_df)
+```
+
+Let's plot the within sum of squares as a function of the number of clusters. 
+
+```{r}
+# Plot the elbow plot
+ggplot(elbow_df, aes(x = k, y = tot_withinss)) +
+  geom_line() +
+  scale_x_continuous(breaks = 1:10)
+```
+
+
+Note: Determining an elbow, or knee, in the plot has always been difficult for me. This methods is lacking in a clear guidance. I would think 2 or 3 are where the knee occurs but it is not obvious.  
+
+Instead of writing all this code, we could use the following code.
+
+```{r}
+fviz_nbclust(lineup, kmeans,nstart=25, method = "wss") +
+  labs(subtitle = "Elbow Plot")
+```
+
+## Other Methods to Determine Numbers of Clusters  
+
+There are other methods to determine the number of clusters, [datanovia](https://www.datanovia.com/en/lessons/determining-the-optimal-number-of-clusters-3-must-know-methods/) has a great tutorial.  
+
+The silhouette method compares the average distance of each point in a cluster to the average distance in the closet neighbor. For a particular number of cluster we can find the average silhouette distance. The closer the value to 1 the better.
+
+```{r}
+fviz_nbclust(lineup, kmeans, nstart=25, method = "silhouette")+
+  labs(subtitle = "Silhouette method")
+```
+
+This is much more satisfying.
+
+## More Insight on Sihouette 
+
+```{r}
+library(cluster)
+```
+
+```{r}
+# Generate a k-means model using the pam() function with a k = 2
+pam_k2 <- pam(lineup, k = 2)
+
+# Plot the silhouette visual for the pam_k2 model
+plot(silhouette(pam_k2))
+```
+
+
+```{r}
+# Generate a k-means model using the pam() function with a k = 3
+pam_k3 <- pam(lineup,k=3)
+
+# Plot the silhouette visual for the pam_k3 model
+plot(silhouette(pam_k3))
+```
+
+Another method is using the gap statistic. Note there are over 30 indices that could be used and the package NbClust uses them all.
+
+```{r}
+set.seed(511)
+fviz_nbclust(lineup, kmeans, nstart = 25,  method = "gap_stat", nboot = 50)+
+  labs(subtitle = "Gap statistic method")
+```
+
+
+```{r}
+library(NbClust)
+```
+
+```{r}
+summary(NbClust(lineup,method='kmeans',max.nc = 10))
+```
+
+
+Too few data. It is clear that selecting the number of clusters is not trivial.
+
+## Weaknesses
+
+K-means is fast, easy to understand, and good when partitions are clear. Besides issues with trying to determine the number of cluster, there are issues when centroids overlapping or when the number of features is large. 
+
+### Overlapping centroids.  
+
+Another potential problem with K-means clustering is if there are not clear partitions based on a centroid. That is, the centroids for two clusters are close together. This is simply to imagine with two circular rings with the same center but different radii. Consider the following data.
+
+```{r}
+data("multishapes")
+Small_df <- multishapes[, 1:2]
+head(Small_df)
+```
+
+```{r}
+# Plot the positions of the players and color them using their cluster
+ggplot(Small_df, aes(x = x, y = y)) +
+  geom_point()
+```
+
+Let's see what K-means does with this data.
+
+```{r}
+set.seed(123)
+km.res <- kmeans(Small_df, 5, nstart = 25)
+fviz_cluster(km.res, Small_df,  geom = "point", 
+             ellipse= FALSE, show.clust.cent = FALSE,
+             palette = "jco", ggtheme = theme_classic())
+```  
+
+Not the five clusters we can see visually. Also since each point must be in a cluster, some of the points that appear to be noise are included. Other methods such DBSCAN work better on this type of data.
+
+```{r}
+library(dbscan)
+```
+
+```{r}
+db <- dbscan(Small_df, eps = 0.15, minPts = 5)
+```
+
+```{r}
+# Plot DBSCAN results
+fviz_cluster(db, data = Small_df, stand = FALSE,
+             ellipse = FALSE, show.clust.cent = FALSE,
+             geom = "point",palette = "jco", ggtheme = theme_classic())
+```
+### Curse of Dimensionality  
+
+
+In high dimension K-means is going to have problems because of the curse of dimensionality. Nothing will be near the centroids. A solution is spherical k-means.
+
+# Homework 
+
+Use K-means to group the customers in the market segmenting data into the appropriate marketing groups.
+
+```{r}
+market_seg <- readRDS("ws_customers.rds")
+market_seg
+```
+
