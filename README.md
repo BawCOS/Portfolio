@@ -16,6 +16,8 @@ This is a repository of what I consider interesting notebooks and code.  Some ar
 
 [Names.ipnyb](https://github.com/BawCOS/Portfolio/blob/master/Names.ipynb) is a jupyter notebook from a project in Datacamp, http://www.datacamp.com, that I completed and added additional material.  It demonstrates obtaining data, cleaning, analyzing, and creating visual summaries.
 
+[Kmeans.pdf](https://github.com/BawCOS/Portfolio/blob/master/Kmeans.pdf) is a lesson plan I wrote on the Kmeans clustering algorithm. It is done in R. The files for it are in the Kmeans folder.
+
 [Project.pdf](https://github.com/BawCOS/Portfolio/blob/master/Project.pdf) is a projects I wrote for my class based on a blog from R-bloogers, https://www.r-bloggers.com/a-spell-checker-in-r/, I adapted the code and added a Bayesian component. [Project_Solution.pdf](https://github.com/BawCOS/Portfolio/blob/master/Project_Solution.pdf) is my solution to the project.
 
 [Solution Manual Math 377.pdf](https://github.com/BawCOS/Portfolio/blob/master/Solution%20Manual%20Math%20377.pdf) is an Rmardown file compiled into a pdf that contains my solutions to the problems assigned to my class from the book Foundatons and Applications of Statistics: An Introduction using R,http://www.calvin.edu/~rpruim/fast/.
