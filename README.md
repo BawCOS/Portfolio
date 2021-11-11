@@ -26,7 +26,7 @@ This is a repository of what I consider interesting notebooks and code.  Some ar
 
 An example of a teaching video I made is at https://goo.gl/imvVZC 
 
-I wrote a textbook for computationally based statistics, https://bawcos.github.io/Computational-Probability-and-Statistics/
+I co-wrote a textbook for computationally-based statistics, https://ds-usafa.github.io/Computational-Probability-and-Statistics/
 
 I adopted Johns Hopkins Automatic R Instructor to produce as simple demo video https://goo.gl/rBiEb6
 
